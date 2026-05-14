@@ -7,43 +7,80 @@ import re
 from datetime import date, timedelta
 
 _MONTHS: dict[str, int] = {
-    "january": 1, "jan": 1,
-    "february": 2, "feb": 2,
-    "march": 3, "mar": 3,
-    "april": 4, "apr": 4,
+    "january": 1,
+    "jan": 1,
+    "february": 2,
+    "feb": 2,
+    "march": 3,
+    "mar": 3,
+    "april": 4,
+    "apr": 4,
     "may": 5,
-    "june": 6, "jun": 6,
-    "july": 7, "jul": 7,
-    "august": 8, "aug": 8,
-    "september": 9, "sep": 9, "sept": 9,
-    "october": 10, "oct": 10,
-    "november": 11, "nov": 11,
-    "december": 12, "dec": 12,
+    "june": 6,
+    "jun": 6,
+    "july": 7,
+    "jul": 7,
+    "august": 8,
+    "aug": 8,
+    "september": 9,
+    "sep": 9,
+    "sept": 9,
+    "october": 10,
+    "oct": 10,
+    "november": 11,
+    "nov": 11,
+    "december": 12,
+    "dec": 12,
 }
 
 _WEEKDAYS: dict[str, int] = {
-    "monday": 0, "mon": 0,
-    "tuesday": 1, "tue": 1, "tues": 1,
-    "wednesday": 2, "wed": 2,
-    "thursday": 3, "thu": 3, "thur": 3, "thurs": 3,
-    "friday": 4, "fri": 4,
-    "saturday": 5, "sat": 5,
-    "sunday": 6, "sun": 6,
+    "monday": 0,
+    "mon": 0,
+    "tuesday": 1,
+    "tue": 1,
+    "tues": 1,
+    "wednesday": 2,
+    "wed": 2,
+    "thursday": 3,
+    "thu": 3,
+    "thur": 3,
+    "thurs": 3,
+    "friday": 4,
+    "fri": 4,
+    "saturday": 5,
+    "sat": 5,
+    "sunday": 6,
+    "sun": 6,
 }
 
 _ORDINAL_RE = re.compile(r"(\d+)(?:st|nd|rd|th)")
 
 _UNITS: dict[str, str] = {
-    "day": "days", "days": "days",
-    "week": "weeks", "weeks": "weeks",
-    "month": "months", "months": "months",
-    "year": "years", "years": "years",
+    "day": "days",
+    "days": "days",
+    "week": "weeks",
+    "weeks": "weeks",
+    "month": "months",
+    "months": "months",
+    "year": "years",
+    "years": "years",
 }
 
 _WORD_NUMS: dict[str, int] = {
-    "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4,
-    "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
-    "eleven": 11, "twelve": 12,
+    "a": 1,
+    "an": 1,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
 }
 
 
@@ -159,16 +196,18 @@ def _try_before_after(s: str, ref: date) -> date | None:
     m = _BEFORE_AFTER_SPLIT.search(s)
     if not m:
         return None
-    duration_part = s[: m.start()]
+    duration_part = s[: m.start()].replace(" and ", ", ")
     direction_word = m.group(1)
-    anchor_part = s[m.end() :]
+    anchor_part = s[m.end() :].strip()
 
     chunks = _DURATION_CHUNK.findall(duration_part)
     if not chunks:
         return None
 
     direction = -1 if direction_word == "before" else 1
-    anchor = _parse_absolute(anchor_part.strip(), ref)
+    anchor = _try_keyword(anchor_part, ref)
+    if anchor is None:
+        anchor = _parse_absolute(anchor_part, ref)
     result = anchor
     for num_str, unit_str in chunks:
         result = _apply_delta(result, direction * _parse_num(num_str), _UNITS[unit_str])
@@ -213,14 +252,10 @@ def _try_next_last_weekday(s: str, ref: date) -> date | None:
 # ---------------------------------------------------------------------------
 
 # "December 1, 2025" / "Dec 1st, 2025" / "December 1 2025" / "December 1"
-_MONTH_DAY_YEAR = re.compile(
-    r"^(\w+)\s+(\d+)\s*,?\s*(\d{4})?$"
-)
+_MONTH_DAY_YEAR = re.compile(r"^(\w+)\s+(\d+)\s*,?\s*(\d{4})?$")
 
 # "1 December 2025" / "1st December 2025"
-_DAY_MONTH_YEAR = re.compile(
-    r"^(\d+)\s+(\w+)\s*,?\s*(\d{4})?$"
-)
+_DAY_MONTH_YEAR = re.compile(r"^(\d+)\s+(\w+)\s*,?\s*(\d{4})?$")
 
 # ISO-style: "2025-12-01"
 _ISO = re.compile(r"^(\d{4})-(\d{1,2})-(\d{1,2})$")

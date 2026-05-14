@@ -149,22 +149,30 @@ def _apply_delta(ref: date, n: int, unit: str) -> date:
     raise ParseError(f"Unknown unit: {unit!r}")  # pragma: no cover
 
 
-_BEFORE_AFTER = re.compile(
-    rf"^({_NUM})\s+(day|days|week|weeks|month|months|year|years)"
-    r"\s+(before|after)\s+(.+)$"
-)
+_UNIT_PAT = r"(?:day|days|week|weeks|month|months|year|years)"
+_DURATION_CHUNK = re.compile(rf"({_NUM})\s+({_UNIT_PAT})")
+_BEFORE_AFTER_SPLIT = re.compile(r"\s+(before|after)\s+", re.IGNORECASE)
 
 
 def _try_before_after(s: str, ref: date) -> date | None:
-    """Handle '5 days before December 1st, 2025'."""
-    m = _BEFORE_AFTER.match(s)
+    """Handle '5 days before December 1st, 2025' and compound forms."""
+    m = _BEFORE_AFTER_SPLIT.search(s)
     if not m:
         return None
-    n = _parse_num(m.group(1))
-    unit = _UNITS[m.group(2)]
-    direction = -1 if m.group(3) == "before" else 1
-    anchor = _parse_absolute(m.group(4).strip(), ref)
-    return _apply_delta(anchor, direction * n, unit)
+    duration_part = s[: m.start()]
+    direction_word = m.group(1)
+    anchor_part = s[m.end() :]
+
+    chunks = _DURATION_CHUNK.findall(duration_part)
+    if not chunks:
+        return None
+
+    direction = -1 if direction_word == "before" else 1
+    anchor = _parse_absolute(anchor_part.strip(), ref)
+    result = anchor
+    for num_str, unit_str in chunks:
+        result = _apply_delta(result, direction * _parse_num(num_str), _UNITS[unit_str])
+    return result
 
 
 _NEXT_LAST_WD = re.compile(r"^(next|last|this)\s+(\w+)$")

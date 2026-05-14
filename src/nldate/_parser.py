@@ -66,6 +66,32 @@ _UNITS: dict[str, str] = {
     "years": "years",
 }
 
+_WORD_NUMS: dict[str, int] = {
+    "a": 1,
+    "an": 1,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+}
+
+
+def _parse_num(s: str) -> int:
+    """Convert a digit string or English word to int."""
+    if s.isdigit():
+        return int(s)
+    if s in _WORD_NUMS:
+        return _WORD_NUMS[s]
+    raise ParseError(f"Unknown number: {s!r}")
+
 
 class ParseError(ValueError):
     """Raised when a date string cannot be parsed."""
@@ -115,11 +141,13 @@ def _try_keyword(s: str, ref: date) -> date | None:
     return None
 
 
+_NUM = r"(?:\d+|[a-z]+)"
+
 _REL_FUTURE = re.compile(
-    r"^in\s+(\d+|a)\s+(day|days|week|weeks|month|months|year|years)$"
+    rf"^in\s+({_NUM})\s+(day|days|week|weeks|month|months|year|years)$"
 )
 _REL_PAST = re.compile(
-    r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)\s+ago$"
+    rf"^({_NUM})\s+(day|days|week|weeks|month|months|year|years)\s+ago$"
 )
 
 
@@ -127,14 +155,12 @@ def _try_relative(s: str, ref: date) -> date | None:
     """Handle 'in 5 days', '3 weeks ago', 'a week ago', etc."""
     m = _REL_FUTURE.match(s)
     if m:
-        n = 1 if m.group(1) == "a" else int(m.group(1))
-        unit = _UNITS[m.group(2)]
+        n, unit = _parse_num(m.group(1)), _UNITS[m.group(2)]
         return _apply_delta(ref, n, unit)
 
     m = _REL_PAST.match(s)
     if m:
-        n = 1 if m.group(1) == "a" else int(m.group(1))
-        unit = _UNITS[m.group(2)]
+        n, unit = _parse_num(m.group(1)), _UNITS[m.group(2)]
         return _apply_delta(ref, -n, unit)
 
     return None
@@ -153,7 +179,7 @@ def _apply_delta(ref: date, n: int, unit: str) -> date:
 
 
 _BEFORE_AFTER = re.compile(
-    r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)"
+    rf"^({_NUM})\s+(day|days|week|weeks|month|months|year|years)"
     r"\s+(before|after)\s+(.+)$"
 )
 
@@ -163,7 +189,7 @@ def _try_before_after(s: str, ref: date) -> date | None:
     m = _BEFORE_AFTER.match(s)
     if not m:
         return None
-    n = 1 if m.group(1) == "a" else int(m.group(1))
+    n = _parse_num(m.group(1))
     unit = _UNITS[m.group(2)]
     direction = -1 if m.group(3) == "before" else 1
     anchor = _parse_absolute(m.group(4).strip(), ref)

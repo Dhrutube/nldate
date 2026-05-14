@@ -195,6 +195,9 @@ _ISO = re.compile(r"^(\d{4})-(\d{1,2})-(\d{1,2})$")
 # US-style: "12/01/2025" or "12/1/2025"
 _US_SLASH = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4})$")
 
+# Year-first slash: "2025/12/01"
+_YEAR_SLASH = re.compile(r"^(\d{4})/(\d{1,2})/(\d{1,2})$")
+
 
 def _parse_absolute(s: str, ref: date) -> date:
     """Parse an absolute date string, raising ParseError on failure."""
@@ -207,6 +210,10 @@ def _parse_absolute(s: str, ref: date) -> date:
     m = _US_SLASH.match(s)
     if m:
         return date(int(m.group(3)), int(m.group(1)), int(m.group(2)))
+
+    m = _YEAR_SLASH.match(s)
+    if m:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
 
     m = _MONTH_DAY_YEAR.match(s)
     if m:

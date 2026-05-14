@@ -90,7 +90,7 @@ def _parse_num(s: str) -> int:
         return int(s)
     if s in _WORD_NUMS:
         return _WORD_NUMS[s]
-    raise ParseError(f"Unknown number: {s!r}")
+    raise ValueError(f"Unknown number: {s!r}")
 
 
 class ParseError(ValueError):
@@ -101,14 +101,14 @@ def _month_number(name: str) -> int:
     key = name.lower().rstrip(".")
     if key in _MONTHS:
         return _MONTHS[key]
-    raise ParseError(f"Unknown month: {name!r}")
+    raise ValueError(f"Unknown month: {name!r}")
 
 
 def _weekday_number(name: str) -> int:
     key = name.lower().rstrip(".")
     if key in _WEEKDAYS:
         return _WEEKDAYS[key]
-    raise ParseError(f"Unknown weekday: {name!r}")
+    raise ValueError(f"Unknown weekday: {name!r}")
 
 
 def _add_months(d: date, months: int) -> date:
@@ -187,7 +187,7 @@ def _apply_delta(ref: date, n: int, unit: str) -> date:
         return _add_months(ref, n)
     if unit == "years":
         return _add_months(ref, n * 12)
-    raise ParseError(f"Unknown unit: {unit!r}")  # pragma: no cover
+    raise ValueError(f"Unknown unit: {unit!r}")  # pragma: no cover
 
 
 _UNIT_PAT = r"(?:day|days|week|weeks|month|months|year|years)"
@@ -301,7 +301,7 @@ def _parse_absolute(s: str, ref: date) -> date:
         year = int(m.group(3)) if m.group(3) else ref.year
         return date(year, month, day)
 
-    raise ParseError(f"Cannot parse date: {s!r}")
+    raise ValueError(f"Cannot parse date: {s!r}")
 
 
 # ---------------------------------------------------------------------------

@@ -138,6 +138,10 @@ def _try_keyword(s: str, ref: date) -> date | None:
         return ref + timedelta(days=1)
     if s == "yesterday":
         return ref - timedelta(days=1)
+    if s in ("the day after tomorrow", "day after tomorrow"):
+        return ref + timedelta(days=2)
+    if s in ("the day before yesterday", "day before yesterday"):
+        return ref - timedelta(days=2)
     return None
 
 

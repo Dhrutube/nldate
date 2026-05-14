@@ -66,14 +66,10 @@ class TestBeforeAfter:
         )
 
     def test_2_weeks_after(self) -> None:
-        assert parse("2 weeks after January 1, 2026", today=REF) == date(
-            2026, 1, 15
-        )
+        assert parse("2 weeks after January 1, 2026", today=REF) == date(2026, 1, 15)
 
     def test_1_month_before(self) -> None:
-        assert parse("1 month before March 31, 2025", today=REF) == date(
-            2025, 2, 28
-        )
+        assert parse("1 month before March 31, 2025", today=REF) == date(2025, 2, 28)
 
 
 class TestNextLastWeekday:

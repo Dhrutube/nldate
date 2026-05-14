@@ -201,7 +201,7 @@ _YEAR_SLASH = re.compile(r"^(\d{4})/(\d{1,2})/(\d{1,2})$")
 
 def _parse_absolute(s: str, ref: date) -> date:
     """Parse an absolute date string, raising ParseError on failure."""
-    s = _strip_ordinal(s).strip()
+    s = _strip_ordinal(s).replace(".", "").strip()
 
     m = _ISO.match(s)
     if m:

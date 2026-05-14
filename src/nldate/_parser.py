@@ -116,7 +116,7 @@ def _try_keyword(s: str, ref: date) -> date | None:
 
 
 _REL_FUTURE = re.compile(
-    r"^in\s+(\d+)\s+(day|days|week|weeks|month|months|year|years)$"
+    r"^in\s+(\d+|a)\s+(day|days|week|weeks|month|months|year|years)$"
 )
 _REL_PAST = re.compile(
     r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)\s+ago$"
@@ -124,15 +124,17 @@ _REL_PAST = re.compile(
 
 
 def _try_relative(s: str, ref: date) -> date | None:
-    """Handle 'in 5 days', '3 weeks ago', etc."""
+    """Handle 'in 5 days', '3 weeks ago', 'a week ago', etc."""
     m = _REL_FUTURE.match(s)
     if m:
-        n, unit = int(m.group(1)), _UNITS[m.group(2)]
+        n = 1 if m.group(1) == "a" else int(m.group(1))
+        unit = _UNITS[m.group(2)]
         return _apply_delta(ref, n, unit)
 
     m = _REL_PAST.match(s)
     if m:
-        n, unit = int(m.group(1)), _UNITS[m.group(2)]
+        n = 1 if m.group(1) == "a" else int(m.group(1))
+        unit = _UNITS[m.group(2)]
         return _apply_delta(ref, -n, unit)
 
     return None
@@ -151,7 +153,7 @@ def _apply_delta(ref: date, n: int, unit: str) -> date:
 
 
 _BEFORE_AFTER = re.compile(
-    r"^(\d+)\s+(day|days|week|weeks|month|months|year|years)"
+    r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)"
     r"\s+(before|after)\s+(.+)$"
 )
 
@@ -161,7 +163,7 @@ def _try_before_after(s: str, ref: date) -> date | None:
     m = _BEFORE_AFTER.match(s)
     if not m:
         return None
-    n = int(m.group(1))
+    n = 1 if m.group(1) == "a" else int(m.group(1))
     unit = _UNITS[m.group(2)]
     direction = -1 if m.group(3) == "before" else 1
     anchor = _parse_absolute(m.group(4).strip(), ref)

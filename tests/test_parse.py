@@ -87,14 +87,10 @@ class TestBeforeAfter:
         )
 
     def test_2_weeks_after(self) -> None:
-        assert parse("2 weeks after January 1, 2026", today=REF) == date(
-            2026, 1, 15
-        )
+        assert parse("2 weeks after January 1, 2026", today=REF) == date(2026, 1, 15)
 
     def test_1_month_before(self) -> None:
-        assert parse("1 month before March 31, 2025", today=REF) == date(
-            2025, 2, 28
-        )
+        assert parse("1 month before March 31, 2025", today=REF) == date(2025, 2, 28)
 
     def test_compound_duration(self) -> None:
         assert parse("2 years, 3 months before Dec. 1, 2025", today=REF) == date(
@@ -102,17 +98,15 @@ class TestBeforeAfter:
         )
 
     def test_compound_with_and(self) -> None:
-        assert parse(
-            "1 year and 2 months after yesterday", today=REF
-        ) == _add_months(_add_months(REF - timedelta(days=1), 12), 2)
+        assert parse("1 year and 2 months after yesterday", today=REF) == _add_months(
+            _add_months(REF - timedelta(days=1), 12), 2
+        )
 
     def test_relative_anchor_tomorrow(self) -> None:
         assert parse("3 days after tomorrow", today=REF) == REF + timedelta(days=4)
 
     def test_a_week_before_absolute(self) -> None:
-        assert parse("a week before December 1, 2025", today=REF) == date(
-            2025, 11, 24
-        )
+        assert parse("a week before December 1, 2025", today=REF) == date(2025, 11, 24)
 
 
 class TestNextLastWeekday:

@@ -118,7 +118,9 @@ def _try_keyword(s: str, ref: date) -> date | None:
 _REL_FUTURE = re.compile(
     r"^in\s+(\d+)\s+(day|days|week|weeks|month|months|year|years)$"
 )
-_REL_PAST = re.compile(r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)\s+ago$")
+_REL_PAST = re.compile(
+    r"^(\d+|a)\s+(day|days|week|weeks|month|months|year|years)\s+ago$"
+)
 
 
 def _try_relative(s: str, ref: date) -> date | None:
